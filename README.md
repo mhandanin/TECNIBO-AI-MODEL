@@ -21,13 +21,23 @@ materiau, de son profile et d'options de finition. Les donnees utilisees sont
 
 ```
 industrial-pricing-ai/
-├── data/raw/            # dataset d'entrainement (fictif)
-├── ml/                  # EDA, comparaison de modeles, entrainement
-├── reports/             # figures PNG + rapports markdown pour la certification
-├── db/                  # (Phase 2) schema PostgreSQL, scripts d'import
-├── api/                 # (Phase 3) API REST exposant le modele
-├── app/                 # (Phase 4) application consommant l'API
-└── .github/workflows/   # (Phase 4) CI/CD
+├── data/raw/                     # dataset d'entrainement (fictif)
+├── ml/                           # package Python "pricing_ml" : EDA, feature engineering, comparaison de modeles
+│   ├── pyproject.toml            # packaging (pip install -e .)
+│   ├── src/pricing_ml/
+│   │   ├── config.py             # chemins et constantes (colonnes, cible, seed)
+│   │   ├── data.py               # chargement + nettoyage du dataset
+│   │   ├── features.py           # feature engineering + SppEncoder (encodage cible sans fuite)
+│   │   ├── models.py             # registre des modeles candidats
+│   │   ├── evaluate.py           # split train/test, entrainement, metriques, export tableau
+│   │   └── plots.py              # toutes les figures (EDA + comparaison)
+│   ├── scripts/                  # entrypoints CLI fins (run_eda.py, run_compare_models.py)
+│   └── tests/                    # tests unitaires (pytest) du feature engineering
+├── reports/                      # figures PNG + rapports markdown pour la certification
+├── db/                           # (Phase 2) schema PostgreSQL, scripts d'import
+├── api/                          # (Phase 3) API REST exposant le modele
+├── app/                          # (Phase 4) application consommant l'API
+└── .github/workflows/            # (Phase 4) CI/CD
 ```
 
 ## Phase 1 - Analyse et choix du modele
@@ -39,9 +49,12 @@ Voir [reports/phase1_analysis.md](reports/phase1_analysis.md) pour le detail
 
 ```bash
 python -m venv .venv
-.venv/Scripts/activate       # ou source .venv/bin/activate sous Linux/Mac
-pip install -r ml/requirements.txt
+.venv/Scripts/activate            # ou source .venv/bin/activate sous Linux/Mac
+pip install -e "./ml[dev]"        # installe le package pricing_ml + pytest
 
-python ml/eda.py              # genere reports/figures/01..05
-python ml/compare_models.py   # genere reports/figures/06..08 + reports/model_comparison.{md,csv}
+cd ml
+python -m pytest -q               # tests unitaires du feature engineering
+
+python scripts/run_eda.py             # genere reports/figures/01..05
+python scripts/run_compare_models.py  # genere reports/figures/06..08 + reports/model_comparison.{md,csv}
 ```
