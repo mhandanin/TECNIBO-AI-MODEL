@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Exploratory data analysis entrypoint.
 
-Generates PNG figures under reports/figures/ for the certification report.
+Generates PNG figures under reports/figures/
 
 Usage:
     python scripts/run_eda.py

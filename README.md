@@ -12,7 +12,7 @@ materiau, de son profile et d'options de finition. Les donnees utilisees sont
 ## Etat d'avancement
 
 - [x] Phase 1 - Analyse exploratoire et choix du modele (`ml/`, `reports/`)
-- [ ] Phase 2 - Base de donnees PostgreSQL (`db/`)
+- [x] Phase 2 - Base de donnees PostgreSQL (`db/`, `docs/merise/`, `docs/rgpd_registre.md`)
 - [ ] Phase 3 - API REST du modele (`api/`)
 - [ ] Phase 4 - Application + tests + CI/CD (`app/`, `.github/workflows/`)
 - [ ] Phase 5 - Monitorage et gestion d'incident
@@ -21,6 +21,8 @@ materiau, de son profile et d'options de finition. Les donnees utilisees sont
 
 ```
 industrial-pricing-ai/
+├── docker-compose.yml            # services (db pour l'instant ; api/app viendront en Phase 3/4)
+├── .env.example                  # variables d'environnement (copier en .env, non versionne)
 ├── data/raw/                     # dataset d'entrainement (fictif)
 ├── ml/                           # package Python "pricing_ml" : EDA, feature engineering, comparaison de modeles
 │   ├── pyproject.toml            # packaging (pip install -e .)
@@ -34,7 +36,10 @@ industrial-pricing-ai/
 │   ├── scripts/                  # entrypoints CLI fins (run_eda.py, run_compare_models.py)
 │   └── tests/                    # tests unitaires (pytest) du feature engineering
 ├── reports/                      # figures PNG + rapports markdown pour la certification
-├── db/                           # (Phase 2) schema PostgreSQL, scripts d'import
+├── db/                           # PostgreSQL : DDL (db/sql), script d'import (db/scripts)
+├── docs/
+│   ├── merise/                   # MCD.md, MPD.md
+│   └── rgpd_registre.md          # registre des traitements de donnees personnelles
 ├── api/                          # (Phase 3) API REST exposant le modele
 ├── app/                          # (Phase 4) application consommant l'API
 └── .github/workflows/            # (Phase 4) CI/CD
@@ -57,4 +62,26 @@ python -m pytest -q               # tests unitaires du feature engineering
 
 python scripts/run_eda.py             # genere reports/figures/01..05
 python scripts/run_compare_models.py  # genere reports/figures/06..08 + reports/model_comparison.{md,csv}
+```
+
+## Phase 2 - Base de donnees PostgreSQL
+
+Modelisation Merise (MCD/MPD), schema PostgreSQL et import du dataset dans
+une base normalisee (`materiau`, `profile`, `article`), plus un historique
+des predictions/entrainements (`prediction`, `modele_entrainement`) prevu
+pour les phases suivantes. Voir :
+
+- [docs/merise/MCD.md](docs/merise/MCD.md) / [docs/merise/MPD.md](docs/merise/MPD.md)
+- [docs/rgpd_registre.md](docs/rgpd_registre.md) — registre des traitements
+- [db/README.md](db/README.md) — installation et commandes detaillees
+
+### Reproduire
+
+```bash
+cp .env.example .env
+docker compose up -d db
+
+cd db/scripts
+pip install -r requirements.txt
+python import_dataset.py
 ```
