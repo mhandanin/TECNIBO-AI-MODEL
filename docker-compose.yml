@@ -18,8 +18,43 @@ services:
       timeout: 5s
       retries: 10
 
-  # api:   (Phase 3) FastAPI exposant le modele de pricing
-  # app:   (Phase 4) application consommant l'API
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: pricing_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      # A l'interieur du reseau Docker, l'API doit joindre "db" (nom du
+      # service) sur son port interne 5432 -- pas "localhost:5433", qui
+      # n'a de sens que depuis l'hote (cf. .env / DATABASE_URL).
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api/model_artifacts:/repo/api/model_artifacts
+
+  app:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    container_name: pricing_app
+    restart: unless-stopped
+    depends_on:
+      - api
+    env_file: .env
+    environment:
+      PRICING_API_BASE_URL: http://api:8000
+    ports:
+      # 8090 (pas 8080) : un serveur natif (Apache/EnterpriseDB, installe
+      # avec l'instance PostgreSQL native de la machine, cf. le conflit de
+      # port 5432 documente pour "db") occupe deja le 8080 sur cette
+      # machine -- meme logique que APP_PORT ci-dessous, surchargeable.
+      - "${APP_PORT:-8090}:8000"
 
 volumes:
   pgdata:

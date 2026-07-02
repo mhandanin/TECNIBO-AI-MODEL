@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Pricing industriel — simulateur</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main>
+    <h1>Simulateur de prix — article industriel sur-mesure</h1>
+
+    <form id="predict-form">
+      <div class="field">
+        <label for="largeur_mm">Largeur (mm)</label>
+        <input type="number" id="largeur_mm" name="largeur_mm" min="1" max="10000" required>
+      </div>
+      <div class="field">
+        <label for="hauteur_mm">Hauteur (mm)</label>
+        <input type="number" id="hauteur_mm" name="hauteur_mm" min="1" max="10000" required>
+      </div>
+      <div class="field">
+        <label for="materiau">Materiau</label>
+        <select id="materiau" name="materiau" required></select>
+      </div>
+      <div class="field">
+        <label for="profile">Profile</label>
+        <select id="profile" name="profile" required></select>
+      </div>
+      <div class="field">
+        <label for="code_spp">Code SPP</label>
+        <input type="text" id="code_spp" name="code_spp" required>
+      </div>
+      <div class="field">
+        <label for="complexity_factor">Facteur de complexite</label>
+        <input type="number" id="complexity_factor" name="complexity_factor" step="0.0001" min="0.0001" required>
+      </div>
+      <div class="field">
+        <label for="logistics_cost">Cout logistique (EUR)</label>
+        <input type="number" id="logistics_cost" name="logistics_cost" step="0.01" min="0" required>
+      </div>
+
+      <button type="submit">Calculer le prix</button>
+    </form>
+
+    <section id="result" class="hidden"></section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

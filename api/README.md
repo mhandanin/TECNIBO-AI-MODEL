@@ -30,7 +30,7 @@ utilisateur, rotation, rate limiting) pour un usage multi-clients reel.
 
 ## Dependances
 
-- La base PostgreSQL de la Phase 2 doit tourner (`docker compose up -d db`
+- La base PostgreSQL doit tourner (`docker compose up -d db`
   depuis la racine du depot).
 - Un modele doit avoir ete entraine et enregistre (`api/scripts/train_and_register.py`)
   avant de demarrer l'API — sinon `/predict` et `/model/info` renvoient une

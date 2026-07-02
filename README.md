@@ -69,8 +69,8 @@ flowchart LR
 | Donnees / ML | Python, pandas, scikit-learn, matplotlib/seaborn |
 | Base de donnees | PostgreSQL 16 (Docker) |
 | API | FastAPI, cle API (`X-API-Key`), doc OpenAPI auto-generee |
-| Application cliente | Streamlit ou application web minimale (a venir — Phase 4) |
-| Tests / CI | pytest, GitHub Actions (a venir — Phase 4) |
+| Application cliente | FastAPI + HTML/JS (application web minimale), proxy server-side vers l'API |
+| Tests / CI/CD | pytest (unitaire + integration), GitHub Actions (tests + build wheels/image Docker) |
 | Monitorage | logs structures / dashboard leger (a venir — Phase 5) |
 
 ## Structure du depot
@@ -94,9 +94,15 @@ industrial-pricing-ai/
 │   ├── pyproject.toml
 │   ├── src/pricing_api/     # main.py, db.py, security.py, model_registry.py, features.py, schemas.py
 │   ├── scripts/             # train_and_register.py (entraine + enregistre un modele en base)
+│   ├── tests/                # unitaires (pas de DB) + integration (marker `integration`, Postgres reel)
+│   ├── Dockerfile
 │   └── model_artifacts/     # artefacts modeles (.joblib, non versionnes)
-├── app/                     # application cliente consommant l'API
-└── .github/workflows/       # CI/CD
+├── app/                     # application cliente (FastAPI + HTML/JS), proxy vers l'API
+│   ├── pyproject.toml
+│   ├── src/pricing_app/     # main.py (proxy), config.py, templates/, static/
+│   ├── tests/
+│   └── Dockerfile
+└── .github/workflows/       # CI/CD (ci-cd.yml : tests ml/api/app, build wheels + image Docker)
 ```
 
 ## Demarrage
@@ -122,7 +128,36 @@ pip install -e "./api"
 python api/scripts/train_and_register.py       # entraine et enregistre un premier modele
 uvicorn pricing_api.main:app --app-dir api/src --reload
 # -> http://127.0.0.1:8000/docs
+
+# Application cliente (dans un autre terminal, API deja lancee)
+pip install -e "./app"
+uvicorn pricing_app.main:app --app-dir app/src --reload --port 8090
+# -> http://127.0.0.1:8090
 ```
+
+> Port 8090 (pas 8080) : sur cette machine un serveur Apache/EnterpriseDB
+> natif occupe deja le 8080 (meme type de conflit que PostgreSQL sur le
+> port 5432, cf. `.env`).
+
+Ou, entierement conteneurise (apres avoir entraine et enregistre un modele au moins une fois, cf. ci-dessus) :
+
+```bash
+docker compose up -d --build
+# API   -> http://127.0.0.1:8000/docs
+# App   -> http://127.0.0.1:8090
+```
+
+### Tests
+
+```bash
+pip install -e "./ml[dev]"  && pytest ml/tests -v
+pip install -e "./api[dev]" && pytest api/tests -v   # necessite la base PostgreSQL (docker compose up -d db)
+pip install -e "./app[dev]" && pytest app/tests -v
+```
+
+Les tests `api/` marques `integration` (voir `api/tests/conftest.py`) tournent contre une base
+de test dediee (`<POSTGRES_DB>_test`, creee/reinitialisee automatiquement), jamais contre la
+base de developpement.
 
 ## Documentation
 
@@ -133,13 +168,14 @@ uvicorn pricing_api.main:app --app-dir api/src --reload
 | Registre des traitements de donnees personnelles (RGPD) | [docs/rgpd_registre.md](docs/rgpd_registre.md) |
 | Mise en place de la base de donnees | [db/README.md](db/README.md) |
 | API REST (endpoints, auth, exemples) | [api/README.md](api/README.md) |
+| Application cliente (proxy, config, tests) | [app/README.md](app/README.md) |
 
 ## Feuille de route
 
 - [x] Exploration des donnees et choix du modele
 - [x] Stockage relationnel (PostgreSQL, modele de donnees Merise)
 - [x] API REST exposant le modele de tarification
-- [ ] Application cliente, tests automatises, CI/CD
+- [x] Application cliente, tests automatises, CI/CD
 - [ ] Monitorage et exemple de gestion d'incident
 
 ## Licence
