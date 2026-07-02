@@ -14,3 +14,6 @@ htmlcov/
 
 # local docker volumes / db data
 db/pgdata/
+
+# internal progress-tracking notes, not for public repo
+SUIVI.md
