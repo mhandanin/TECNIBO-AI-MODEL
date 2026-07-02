@@ -1,130 +1,147 @@
 # industrial-pricing-ai
 
-Predicting the price of a made-to-order industrial article (dimensions,
-material, profile, finish) from historical order data, with a full
-data → model → API → application → monitoring pipeline.
+Prediction du prix d'un article industriel sur-mesure (dimensions, materiau,
+profile, finition) a partir de l'historique des commandes, avec un pipeline
+complet donnees → modele → API → application → monitorage.
 
-> Personal portfolio project built for the RNCP37827 certification (AI
-> Developer). All data is synthetic/generic — no real company data is used.
+> Projet personnel realise dans le cadre de la certification RNCP37827
+> (Developpeur en Intelligence Artificielle). Toutes les donnees utilisees
+> sont synthetiques/generiques — aucune donnee reelle d'entreprise n'est
+> utilisee.
 
-## Overview
+## Presentation
 
-Manually pricing a custom-configured industrial article (a cut-to-size glass
-or panel product, for example) usually means running a set of business rules
-across dimensions, material cost, profile cost, finish and logistics. This
-project reconstructs that pricing logic as a small, production-shaped ML
-system:
+Tarifer manuellement un article industriel configure sur-mesure (un produit
+verrier ou un panneau decoupe aux dimensions du client, par exemple) implique
+generalement d'appliquer un ensemble de regles metier combinant dimensions,
+cout matiere, cout du profile, finition et logistique. Ce projet reconstruit
+cette logique de tarification sous la forme d'un petit systeme ML organise
+comme en production :
 
-1. **Explore & select a model** on historical order data.
-2. **Persist the data** in a normalized relational schema (PostgreSQL).
-3. **Serve predictions** through a documented REST API.
-4. **Consume the API** from a lightweight client application.
-5. **Monitor** the model and the application in production, with a
-   documented incident response example.
+1. **Explorer les donnees et selectionner un modele** a partir de
+   l'historique des commandes.
+2. **Stocker les donnees** dans un schema relationnel normalise
+   (PostgreSQL).
+3. **Servir les predictions** via une API REST documentee.
+4. **Consommer l'API** depuis une application cliente legere.
+5. **Monitorer** le modele et l'application en production, avec un exemple
+   documente de gestion d'incident.
 
-Each stage is deliberately kept simple and demonstrable rather than
-over-engineered — the goal is a complete, working pipeline end to end.
+Chaque etape reste volontairement simple et demontrable plutot que
+sur-construite — l'objectif est un pipeline complet et fonctionnel de bout
+en bout.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
     subgraph Data
-        XLSX[("Raw dataset<br/>(synthetic)")]
+        XLSX[("Dataset brut<br/>(synthetique)")]
         DB[(PostgreSQL)]
     end
 
-    subgraph ML["ml/ — pricing_ml package"]
+    subgraph ML["ml/ — package pricing_ml"]
         EDA[EDA]
-        CMP[Model comparison]
-        TRAIN[Training]
+        CMP[Comparaison de modeles]
+        TRAIN[Entrainement]
     end
 
     API["api/ — FastAPI"]
-    APP["app/ — client application"]
-    MON["Monitoring & logs"]
+    APP["app/ — application cliente"]
+    MON["Monitorage & logs"]
 
     XLSX --> EDA
     XLSX --> CMP
     XLSX -->|import| DB
-    DB -->|training data| TRAIN
-    TRAIN -->|model artifact + run metadata| DB
-    API -->|predict| TRAIN
-    API -->|log prediction| DB
+    DB -->|donnees d'entrainement| TRAIN
+    TRAIN -->|artefact modele + metadonnees du run| DB
+    API -->|predit| TRAIN
+    API -->|journalise la prediction| DB
     APP -->|HTTP| API
     API --> MON
     APP --> MON
 ```
 
-## Tech stack
+## Stack technique
 
-| Layer | Choice |
+| Couche | Choix |
 |---|---|
-| Data / ML | Python, pandas, scikit-learn, matplotlib/seaborn |
-| Database | PostgreSQL 16 (Docker) |
-| API | FastAPI (planned — Phase 3) |
-| Client app | Streamlit or minimal web app (planned — Phase 4) |
-| Tests / CI | pytest, GitHub Actions (planned — Phase 4) |
-| Monitoring | structured logs / lightweight dashboard (planned — Phase 5) |
+| Donnees / ML | Python, pandas, scikit-learn, matplotlib/seaborn |
+| Base de donnees | PostgreSQL 16 (Docker) |
+| API | FastAPI, cle API (`X-API-Key`), doc OpenAPI auto-generee |
+| Application cliente | Streamlit ou application web minimale (a venir — Phase 4) |
+| Tests / CI | pytest, GitHub Actions (a venir — Phase 4) |
+| Monitorage | logs structures / dashboard leger (a venir — Phase 5) |
 
-## Repository structure
+## Structure du depot
 
 ```
 industrial-pricing-ai/
-├── docker-compose.yml       # local services (PostgreSQL; API/app join in later phases)
-├── .env.example             # environment variables template
-├── data/raw/                # training dataset (synthetic)
-├── ml/                      # pricing_ml package: EDA, feature engineering, model comparison
+├── docker-compose.yml       # services locaux (PostgreSQL ; API/app rejoindront en Phase 3/4)
+├── .env.example             # gabarit des variables d'environnement
+├── data/raw/                # dataset d'entrainement (synthetique)
+├── ml/                      # package pricing_ml : EDA, feature engineering, comparaison de modeles
 │   ├── pyproject.toml
 │   ├── src/pricing_ml/      # data.py, features.py, models.py, evaluate.py, plots.py
 │   ├── scripts/             # run_eda.py, run_compare_models.py
-│   └── tests/               # unit tests (pytest)
-├── db/                      # PostgreSQL schema (db/sql) and import script (db/scripts)
+│   └── tests/               # tests unitaires (pytest)
+├── db/                      # schema PostgreSQL (db/sql) et script d'import (db/scripts)
 ├── docs/
-│   ├── merise/              # MCD.md, MPD.md (data model)
-│   └── rgpd_registre.md     # personal-data processing register
-├── reports/                 # generated figures + written analysis (model selection)
-├── api/                     # REST API exposing the model
-├── app/                     # client application consuming the API
+│   ├── merise/               # MCD.md, MPD.md (modele de donnees)
+│   └── rgpd_registre.md      # registre des traitements de donnees personnelles
+├── reports/                 # figures generees + analyse ecrite (choix du modele)
+├── api/                     # API REST FastAPI exposant le modele
+│   ├── pyproject.toml
+│   ├── src/pricing_api/     # main.py, db.py, security.py, model_registry.py, features.py, schemas.py
+│   ├── scripts/             # train_and_register.py (entraine + enregistre un modele en base)
+│   └── model_artifacts/     # artefacts modeles (.joblib, non versionnes)
+├── app/                     # application cliente consommant l'API
 └── .github/workflows/       # CI/CD
 ```
 
-## Getting started
+## Demarrage
 
-Requirements: Python 3.11+, Docker Desktop.
+Prerequis : Python 3.11+, Docker Desktop.
 
 ```bash
 git clone <repo-url>
 cd industrial-pricing-ai
 cp .env.example .env
 
-# ML package (data prep, EDA, model comparison)
+# Package ML (preparation des donnees, EDA, comparaison de modeles)
 pip install -e "./ml[dev]"
 python ml/scripts/run_eda.py
 python ml/scripts/run_compare_models.py
 
-# Database
+# Base de donnees
 docker compose up -d db
 cd db/scripts && pip install -r requirements.txt && python import_dataset.py
+
+# API REST
+pip install -e "./api"
+python api/scripts/train_and_register.py       # entraine et enregistre un premier modele
+uvicorn pricing_api.main:app --app-dir api/src --reload
+# -> http://127.0.0.1:8000/docs
 ```
 
 ## Documentation
 
-| Topic | Where |
+| Sujet | Emplacement |
 |---|---|
-| Model selection (EDA, benchmarks, conclusion) | [reports/phase1_analysis.md](reports/phase1_analysis.md) |
-| Data model (MCD/MPD) | [docs/merise/MCD.md](docs/merise/MCD.md), [docs/merise/MPD.md](docs/merise/MPD.md) |
-| Personal-data processing register (GDPR) | [docs/rgpd_registre.md](docs/rgpd_registre.md) |
-| Database setup | [db/README.md](db/README.md) |
+| Choix du modele (EDA, benchmarks, conclusion) | [reports/phase1_analysis.md](reports/phase1_analysis.md) |
+| Modele de donnees (MCD/MPD) | [docs/merise/MCD.md](docs/merise/MCD.md), [docs/merise/MPD.md](docs/merise/MPD.md) |
+| Registre des traitements de donnees personnelles (RGPD) | [docs/rgpd_registre.md](docs/rgpd_registre.md) |
+| Mise en place de la base de donnees | [db/README.md](db/README.md) |
+| API REST (endpoints, auth, exemples) | [api/README.md](api/README.md) |
 
-## Roadmap
+## Feuille de route
 
-- [x] Data exploration and model selection
-- [x] Relational data store (PostgreSQL, Merise data model)
-- [ ] REST API exposing the pricing model
-- [ ] Client application, automated tests, CI/CD
-- [ ] Monitoring and incident-response walkthrough
+- [x] Exploration des donnees et choix du modele
+- [x] Stockage relationnel (PostgreSQL, modele de donnees Merise)
+- [x] API REST exposant le modele de tarification
+- [ ] Application cliente, tests automatises, CI/CD
+- [ ] Monitorage et exemple de gestion d'incident
 
-## License
+## Licence
 
-Personal project — no license granted for reuse.
+Projet personnel — aucune licence de reutilisation accordee.
