@@ -12,11 +12,11 @@ sur-mesure). Il ne traite **pas de donnees personnelles reelles**
 (pas de nom de client, pas d'email, pas d'adresse). Le raisonnement
 ci-dessous est neanmoins mene comme si le systeme etait mis en production,
 pour identifier ou des donnees personnelles pourraient apparaitre dans le
-pipeline et comment les traiter — c'est ce raisonnement qui est evalue pour
+pipeline et comment les traiter, c'est ce raisonnement qui est evalue pour
 la certification, independamment du fait que les donnees actuelles soient
 fictives.
 
-## Traitement 1 — Donnees d'entrainement du modele (table `article`)
+## Traitement 1 : Donnees d'entrainement du modele (table `article`)
 
 | Champ | Valeur |
 |---|---|
@@ -31,14 +31,14 @@ fictives.
 
 **Point d'attention pour un usage reel (hors perimetre de ce depot)** : si ce
 pipeline etait un jour alimente par les vraies donnees de commandes de
-l'entreprise (cf. Phase 0 — fichiers exclus de ce depot), la table
+l'entreprise (cf. Phase 0, fichiers exclus de ce depot), la table
 `article`/`ORDERID` contiendrait potentiellement un identifiant de commande
 relie a un client (personne physique ou societe). Il faudrait alors :
 pseudonymiser l'identifiant client avant import, documenter la duree de
 conservation (ex. alignee sur la duree legale de conservation des documents
 commerciaux), et restreindre les acces (RBAC applicatif).
 
-## Traitement 2 — Historique des predictions en production (table `prediction`, Phase 3+)
+## Traitement 2 : Historique des predictions en production (table `prediction`, Phase 3+)
 
 | Champ | Valeur |
 |---|---|
@@ -52,7 +52,7 @@ commerciaux), et restreindre les acces (RBAC applicatif).
 | Mesures de securite | Base non exposee publiquement, `.env` non versionne, acces limite en local/dev. En production : chiffrement au repos, acces par role, rotation des cles API. |
 
 **Mise en oeuvre technique correspondante** : le schema actuel (`prediction`,
-`db/sql/001_init_schema.sql`) ne stocke pas d'IP ni d'identifiant appelant —
+`db/sql/001_init_schema.sql`) ne stocke pas d'IP ni d'identifiant appelant,
 c'est volontaire a ce stade (Phase 2). Si une authentification est ajoutee en
 Phase 3, ce registre devra etre mis a jour avec la colonne ajoutee et sa
 duree de conservation propre.

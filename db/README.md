@@ -1,4 +1,4 @@
-# Base de donnees — pricing industriel
+# Base de donnees : pricing industriel
 
 PostgreSQL 16, lance via Docker Compose. Schema Merise documente dans
 [docs/merise/MCD.md](../docs/merise/MCD.md) et
@@ -23,6 +23,19 @@ docker compose up -d db
 
 Le schema (`db/sql/001_init_schema.sql`) est applique automatiquement au
 premier demarrage du conteneur (monte dans `/docker-entrypoint-initdb.d`).
+Il en va de meme pour `db/sql/002_monitoring.sql` (role `grafana_reader`
+en lecture seule + vue `v_feature_drift`, Phase 5, voir
+[monitoring/README.md](../monitoring/README.md)) sur un volume neuf.
+
+**Sur un volume deja initialise** (cas du volume de developpement de ce
+depot), `docker-entrypoint-initdb.d` ne se rejoue pas automatiquement pour
+les nouveaux fichiers SQL ajoutes apres coup. Appliquer manuellement :
+
+```bash
+docker compose exec -T db psql -U pricing_user -d pricing_db < db/sql/002_monitoring.sql
+```
+
+(Le script est idempotent, le rejouer ne pose pas de probleme.)
 
 ## Import du dataset
 
@@ -37,7 +50,7 @@ Le script :
 1. charge et nettoie `data/raw/industrial_pricing_dataset_10000_rows.xlsx`
    avec les memes regles que le pipeline d'entrainement (`pricing_ml.data`) ;
 2. vide et recharge les tables `materiau`, `profile`, `article`
-   (idempotent — ne touche jamais `prediction` ni `modele_entrainement`) ;
+   (idempotent, ne touche jamais `prediction` ni `modele_entrainement`) ;
 3. affiche un resume (nombre de lignes importees par table).
 
 ## Verifier

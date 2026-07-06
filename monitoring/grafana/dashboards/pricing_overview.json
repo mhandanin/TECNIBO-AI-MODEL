@@ -1,0 +1,124 @@
+{
+  "uid": "pricing-overview",
+  "title": "Pricing industriel : monitorage",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": { "from": "now-24h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Volume de predictions",
+      "type": "timeseries",
+      "datasource": { "type": "postgres", "uid": "pricing_postgres" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "pricing_postgres" },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT date_trunc('hour', horodatage) AS time, count(*) AS predictions FROM prediction WHERE $__timeFilter(horodatage) GROUP BY 1 ORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Latence /predict (ms)",
+      "type": "timeseries",
+      "datasource": { "type": "postgres", "uid": "pricing_postgres" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "fieldConfig": { "defaults": { "unit": "ms" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "pricing_postgres" },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "time_series",
+          "rawSql": "SELECT date_trunc('hour', horodatage) AS time, avg(latence_ms) AS avg_ms, percentile_cont(0.95) WITHIN GROUP (ORDER BY latence_ms) AS p95_ms FROM prediction WHERE $__timeFilter(horodatage) GROUP BY 1 ORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Distribution des prix predits",
+      "type": "histogram",
+      "datasource": { "type": "postgres", "uid": "pricing_postgres" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "fieldConfig": { "defaults": { "unit": "currencyEUR" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "pricing_postgres" },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT prix_predit FROM prediction WHERE $__timeFilter(horodatage)"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Modele actif",
+      "type": "table",
+      "datasource": { "type": "postgres", "uid": "pricing_postgres" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "pricing_postgres" },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT nom_modele, version, r2, mae, rmse, nb_echantillons, date_entrainement FROM modele_entrainement ORDER BY date_entrainement DESC LIMIT 1"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Derive des features (z-score vs entrainement)",
+      "type": "table",
+      "description": "Compare les features des predictions des dernieres 24h aux distributions du jeu d'entrainement (vue v_feature_drift, db/sql/002_monitoring.sql). |z_score| > 2 : a surveiller. |z_score| > 3 : hors du domaine d'entrainement.",
+      "datasource": { "type": "postgres", "uid": "pricing_postgres" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto" } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "z_score_abs" },
+            "properties": [
+              { "id": "custom.displayMode", "value": "color-background" },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "orange", "value": 2 },
+                    { "color": "red", "value": 3 }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "pricing_postgres" },
+          "editorMode": "code",
+          "rawQuery": true,
+          "format": "table",
+          "rawSql": "SELECT feature, baseline_mean, baseline_std, recent_mean, recent_count, z_score, abs(z_score) AS z_score_abs FROM v_feature_drift ORDER BY z_score_abs DESC NULLS LAST"
+        }
+      ]
+    }
+  ]
+}

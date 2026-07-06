@@ -1,4 +1,4 @@
-# Modele Conceptuel de Donnees (MCD) — pricing industriel
+# Modele Conceptuel de Donnees (MCD) : pricing industriel
 
 ## Entites
 

@@ -3,10 +3,13 @@ from __future__ import annotations
 
 import time
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
+from sqlalchemy import text
 
 from . import db
 from .features import build_feature_row
+from .logging_config import logger
 from .model_registry import load_active_model
 from .schemas import CatalogueResponse, ModelInfoResponse, PredictRequest, PredictResponse
 from .security import require_api_key
@@ -22,9 +25,49 @@ app = FastAPI(
 )
 
 
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start = time.perf_counter()
+    response = await call_next(request)
+    duration_ms = (time.perf_counter() - start) * 1000
+    logger.info(
+        "http_request",
+        extra={
+            "method": request.method,
+            "path": request.url.path,
+            "status_code": response.status_code,
+            "duration_ms": round(duration_ms, 2),
+        },
+    )
+    return response
+
+
+@app.exception_handler(Exception)
+async def log_unhandled_exceptions(request: Request, exc: Exception) -> JSONResponse:
+    logger.error(
+        "unhandled_exception",
+        extra={"method": request.method, "path": request.url.path},
+        exc_info=exc,
+    )
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+
+
 @app.get("/health", tags=["monitoring"])
 def health() -> dict:
+    """Liveness: the process is up. Does not check dependencies."""
     return {"status": "ok"}
+
+
+@app.get("/health/ready", tags=["monitoring"])
+def health_ready() -> JSONResponse:
+    """Readiness: the service can actually serve requests (DB reachable)."""
+    try:
+        with db.engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+    except Exception as exc:
+        logger.error("readiness_check_failed", exc_info=exc)
+        return JSONResponse(status_code=503, content={"status": "unavailable", "detail": str(exc)})
+    return JSONResponse(status_code=200, content={"status": "ok"})
 
 
 @app.get("/model/info", response_model=ModelInfoResponse, tags=["model"])
@@ -55,10 +98,12 @@ def predict(payload: PredictRequest, api_key: str = Depends(require_api_key)) ->
 
     materiau_prix_m2 = db.lookup_materiau_price(payload.materiau)
     if materiau_prix_m2 is None:
+        logger.warning("predict_unknown_materiau", extra={"materiau": payload.materiau})
         raise HTTPException(status_code=404, detail=f"Materiau inconnu: {payload.materiau!r}")
 
     profile_prix_unitaire = db.lookup_profile_price(payload.profile)
     if profile_prix_unitaire is None:
+        logger.warning("predict_unknown_profile", extra={"profile": payload.profile})
         raise HTTPException(status_code=404, detail=f"Profile inconnu: {payload.profile!r}")
 
     surface_m2 = (payload.largeur_mm / 1000.0) * (payload.hauteur_mm / 1000.0)
@@ -88,6 +133,17 @@ def predict(payload: PredictRequest, api_key: str = Depends(require_api_key)) ->
         logistics_cost=payload.logistics_cost,
         prix_predit=prix_predit,
         latence_ms=latence_ms,
+    )
+
+    logger.info(
+        "prediction",
+        extra={
+            "materiau": payload.materiau,
+            "profile": payload.profile,
+            "prix_predit": round(prix_predit, 2),
+            "id_entrainement": model.id_entrainement,
+            "latence_ms": round(latence_ms, 2),
+        },
     )
 
     return PredictResponse(

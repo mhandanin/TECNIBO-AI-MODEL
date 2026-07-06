@@ -16,6 +16,12 @@ def test_health_ok(client):
     assert resp.json() == {"status": "ok"}
 
 
+def test_health_ready_ok_when_db_reachable(client, test_db_engine):
+    resp = client.get("/health/ready")
+    assert resp.status_code == 200
+    assert resp.json() == {"status": "ok"}
+
+
 def test_catalogue_lists_seeded_materiaux_and_profiles(client, seed_catalogue):
     resp = client.get("/catalogue")
     assert resp.status_code == 200

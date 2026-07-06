@@ -56,5 +56,28 @@ services:
       # machine -- meme logique que APP_PORT ci-dessous, surchargeable.
       - "${APP_PORT:-8090}:8000"
 
+  grafana:
+    image: grafana/grafana-oss:11.4.0
+    container_name: pricing_grafana
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      # Lu par monitoring/grafana/provisioning/datasources/datasource.yml
+      # via la macro Grafana $__env{} -- jamais ecrit en clair dans un
+      # fichier verse au depot.
+      GRAFANA_DB_PASSWORD: ${GRAFANA_DB_PASSWORD:-change_me_grafana_reader}
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/etc/grafana/dashboards:ro
+
 volumes:
   pgdata:
+  grafana_data:

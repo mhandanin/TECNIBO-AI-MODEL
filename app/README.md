@@ -1,4 +1,4 @@
-# Application cliente — pricing industriel
+# Application cliente : pricing industriel
 
 Petite application web (FastAPI + HTML/JS vanilla) permettant de simuler un
 prix depuis un formulaire, sans passer par `/docs` ou `curl`.

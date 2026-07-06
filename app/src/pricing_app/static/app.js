@@ -50,7 +50,7 @@ async function handleSubmit(event) {
 
   if (!resp.ok) {
     const detail = typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail);
-    showResult(`<strong>Erreur ${resp.status}</strong> — ${detail}`, true);
+    showResult(`<strong>Erreur ${resp.status}</strong> : ${detail}`, true);
     return;
   }
 

@@ -1,4 +1,4 @@
-# Modele Physique de Donnees (MPD) — PostgreSQL
+# Modele Physique de Donnees (MPD) : PostgreSQL
 
 Traduction directe du [MCD](MCD.md) en tables relationnelles. Cle primaire
 soulignee (`PK`), cles etrangeres en italique (`FK`). DDL correspondant :
@@ -83,7 +83,7 @@ Index : `horodatage` (requetes de monitorage par periode),
   `MATERIAU`/`ARTICLE`) : une prediction en production porte sur une saisie
   utilisateur libre, et doit rester un instantane fidele de ce qui a ete
   envoye a l'API, independamment de l'evolution ulterieure du catalogue.
-- `MODELE_ENTRAINEMENT` sert de journal des entrainements (competence C4 —
+- `MODELE_ENTRAINEMENT` sert de journal des entrainements (competence C4,
   historisation du cycle de vie de la donnee/du modele) et de point
   d'ancrage pour le monitorage de derive en Phase 5 (comparer les
   metriques par version de modele dans le temps).

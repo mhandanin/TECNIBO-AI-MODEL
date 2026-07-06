@@ -1,4 +1,4 @@
-# API — pricing industriel
+# API : pricing industriel
 
 API REST (FastAPI) exposant le modele Ridge retenu en Phase 1
 (`reports/phase1_analysis.md`). Documentation OpenAPI generee
@@ -9,13 +9,25 @@ une fois le serveur lance.
 
 | Methode | Route | Auth | Description |
 |---|---|---|---|
-| GET | `/health` | non | Etat du service (liveness) |
+| GET | `/health` | non | Liveness : le processus tourne (toujours 200) |
+| GET | `/health/ready` | non | Readiness : la DB est joignable (200/503) |
 | GET | `/model/info` | non | Version et metriques (R2/MAE/RMSE) du modele actif |
 | GET | `/catalogue` | non | Liste des materiaux/profiles valides pour `/predict` |
 | POST | `/predict` | **oui** (`X-API-Key`) | Predit le prix d'un article (formule finale) |
 
 Chaque appel a `/predict` est journalise dans la table `prediction`
 (features d'entree, prix predit, latence, horodatage, modele utilise).
+
+## Logs et monitorage
+
+L'API produit des logs JSON structures sur stdout (une ligne = un
+evenement : requete HTTP, prediction, erreur ; voir
+`pricing_api/logging_config.py`), visibles via `docker compose logs api`.
+Un tableau de bord Grafana lit directement PostgreSQL, dashboard et
+derive des features d'entree (voir
+[monitoring/README.md](../monitoring/README.md)). Exemple concret
+d'utilisation de ces deux outils pour diagnostiquer une panne :
+[docs/incidents/panne_db_simulee.md](../docs/incidents/panne_db_simulee.md).
 
 ## Authentification
 
@@ -24,7 +36,7 @@ variable d'environnement `API_KEY` (`.env`). Le schema est declare comme
 `APIKeyHeader` FastAPI : il apparait dans `/docs` (bouton "Authorize") et
 dans `openapi.json` sous `components.securitySchemes`.
 
-C'est un choix volontairement simple (secret partage, pas d'OAuth2/JWT) —
+C'est un choix volontairement simple (secret partage, pas d'OAuth2/JWT),
 suffisant pour un service interne/demo ; a faire evoluer (cles par
 utilisateur, rotation, rate limiting) pour un usage multi-clients reel.
 
@@ -33,7 +45,7 @@ utilisateur, rotation, rate limiting) pour un usage multi-clients reel.
 - La base PostgreSQL doit tourner (`docker compose up -d db`
   depuis la racine du depot).
 - Un modele doit avoir ete entraine et enregistre (`api/scripts/train_and_register.py`)
-  avant de demarrer l'API — sinon `/predict` et `/model/info` renvoient une
+  avant de demarrer l'API, sinon `/predict` et `/model/info` renvoient une
   erreur 500 explicite.
 
 ## Installation
@@ -57,7 +69,7 @@ sur 100% des donnees pour l'artefact final. Sauvegarde :
 
 - l'artefact modele (pipeline + encodeur SPP + ordre des colonnes) dans
   `api/model_artifacts/ridge_v<timestamp>.joblib` (non versionne, cf.
-  `.gitignore` — regenerable a tout moment)
+  `.gitignore`, regenerable a tout moment)
 - une ligne dans `modele_entrainement` (version, hyperparametres, metriques,
   chemin de l'artefact)
 

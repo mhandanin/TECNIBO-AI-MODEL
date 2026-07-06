@@ -1,4 +1,4 @@
-# Phase 1 — Analyse exploratoire et justification du choix du modele
+# Phase 1 : Analyse exploratoire et justification du choix du modele
 
 Genere a partir de `ml/eda.py` et `ml/compare_models.py`, sur
 `data/raw/industrial_pricing_dataset_10000_rows.xlsx` (10 000 lignes, dataset generique/fictif).
@@ -24,7 +24,7 @@ Genere a partir de `ml/eda.py` et `ml/compare_models.py`, sur
   pour 10 000 lignes (~25 lignes/code). Le prix moyen par code varie nettement
   autour de la moyenne globale, ce qui justifie de le garder comme feature, mais
   **impose de calculer son encodage cible uniquement sur le jeu d'entrainement**
-  (sinon fuite de donnees — voir Phase 0). C'est ce qui a ete corrige dans
+  (sinon fuite de donnees, voir Phase 0). C'est ce qui a ete corrige dans
   `ml/data_prep.py::SppEncoder` par rapport au script d'origine.
 
 ## 2. Modeles compares
@@ -79,7 +79,7 @@ ni non-linearite). Consequences pour le choix du modele :
   production (Phase 3).
 
 **A documenter dans le rapport de certification** : ce resultat illustre un
-principe important — un modele plus complexe (arbres, ensembles) n'est pas
+principe important : un modele plus complexe (arbres, ensembles) n'est pas
 toujours meilleur ; le choix doit etre justifie par la nature du probleme
 (ici, une relation lineaire connue et peu bruitee) et non par defaut vers le
 modele le plus sophistique.
@@ -90,6 +90,6 @@ Cette phase couvre typiquement les competences liees a l'analyse du jeu de
 donnees et au choix argumente d'un algorithme (selon les versions du
 referentiel, souvent numerotees autour de C6-C8, bloc 2). **A verifier et
 ajuster avec le libelle exact de votre referentiel** avant de citer ces
-numeros dans vos rapports E1-E5 — je n'ai pas le texte officiel sous les
+numeros dans vos rapports E1-E5, je n'ai pas le texte officiel sous les
 yeux, seulement le decoupage de phases que vous m'avez donne (qui commence a
 C4 en Phase 2).

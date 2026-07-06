@@ -17,7 +17,7 @@ from fastapi.templating import Jinja2Templates
 
 from .config import API_KEY, PRICING_API_BASE_URL
 
-app = FastAPI(title="Industrial Pricing — Client")
+app = FastAPI(title="Industrial Pricing : Client")
 
 _PACKAGE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(_PACKAGE_DIR / "templates"))
