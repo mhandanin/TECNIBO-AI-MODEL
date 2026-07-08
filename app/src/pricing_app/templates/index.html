@@ -2,47 +2,85 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pricing industriel : simulateur</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <main>
-    <h1>Simulateur de prix : article industriel sur-mesure</h1>
+  <header class="topbar">
+    <img src="/static/logo.png" alt="Logo" class="logo">
+    <div class="topbar-text">
+      <h1>Simulateur de prix</h1>
+      <p>Article industriel sur-mesure</p>
+    </div>
+  </header>
 
-    <form id="predict-form">
-      <div class="field">
-        <label for="largeur_mm">Largeur (mm)</label>
-        <input type="number" id="largeur_mm" name="largeur_mm" min="1" max="10000" required>
-      </div>
-      <div class="field">
-        <label for="hauteur_mm">Hauteur (mm)</label>
-        <input type="number" id="hauteur_mm" name="hauteur_mm" min="1" max="10000" required>
-      </div>
-      <div class="field">
-        <label for="materiau">Materiau</label>
-        <select id="materiau" name="materiau" required></select>
-      </div>
-      <div class="field">
-        <label for="profile">Profile</label>
-        <select id="profile" name="profile" required></select>
-      </div>
-      <div class="field">
-        <label for="code_spp">Code SPP</label>
-        <input type="text" id="code_spp" name="code_spp" required>
-      </div>
-      <div class="field">
-        <label for="complexity_factor">Facteur de complexite</label>
-        <input type="number" id="complexity_factor" name="complexity_factor" step="0.0001" min="0.0001" required>
-      </div>
-      <div class="field">
-        <label for="logistics_cost">Cout logistique (EUR)</label>
-        <input type="number" id="logistics_cost" name="logistics_cost" step="0.01" min="0" required>
-      </div>
+  <main class="layout">
+    <section class="card form-card">
+      <form id="predict-form">
+        <div class="field-grid">
+          <div class="field">
+            <label for="largeur_mm">Largeur (mm)</label>
+            <input type="number" id="largeur_mm" name="largeur_mm" min="1" max="10000" placeholder="1360" required>
+          </div>
+          <div class="field">
+            <label for="hauteur_mm">Hauteur (mm)</label>
+            <input type="number" id="hauteur_mm" name="hauteur_mm" min="1" max="10000" placeholder="1794" required>
+          </div>
+        </div>
 
-      <button type="submit">Calculer le prix</button>
-    </form>
+        <div class="field combobox" data-name="materiau">
+          <label id="materiau-label">Materiau</label>
+          <button type="button" class="combobox-trigger" aria-haspopup="listbox" aria-labelledby="materiau-label">
+            <span class="combobox-value placeholder">Choisir un materiau...</span>
+            <svg class="chevron" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="combobox-panel hidden">
+            <input type="text" class="combobox-search" placeholder="Rechercher...">
+            <ul class="combobox-list" role="listbox"></ul>
+          </div>
+          <input type="hidden" name="materiau" required>
+        </div>
 
-    <section id="result" class="hidden"></section>
+        <div class="field combobox" data-name="profile">
+          <label id="profile-label">Profile</label>
+          <button type="button" class="combobox-trigger" aria-haspopup="listbox" aria-labelledby="profile-label">
+            <span class="combobox-value placeholder">Choisir un profile...</span>
+            <svg class="chevron" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="combobox-panel hidden">
+            <input type="text" class="combobox-search" placeholder="Rechercher...">
+            <ul class="combobox-list" role="listbox"></ul>
+          </div>
+          <input type="hidden" name="profile" required>
+        </div>
+
+        <div class="field-grid">
+          <div class="field">
+            <label for="code_spp">Code SPP</label>
+            <input type="text" id="code_spp" name="code_spp" placeholder="8906" required>
+          </div>
+          <div class="field">
+            <label for="complexity_factor">Facteur de complexite</label>
+            <input type="number" id="complexity_factor" name="complexity_factor" step="0.0001" min="0.0001" placeholder="1.0949" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="logistics_cost">Cout logistique (EUR)</label>
+          <input type="number" id="logistics_cost" name="logistics_cost" step="0.01" min="0" placeholder="16.13" required>
+        </div>
+
+        <button type="submit" class="submit-btn">
+          <span>Calculer le prix</span>
+        </button>
+      </form>
+    </section>
+
+    <section class="card result-card">
+      <h2>Resultat</h2>
+      <div id="result" class="result hidden"></div>
+    </section>
   </main>
 
   <script src="/static/app.js"></script>

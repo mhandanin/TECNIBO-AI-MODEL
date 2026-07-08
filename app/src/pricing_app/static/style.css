@@ -1,69 +1,292 @@
+:root {
+  --violet: #aab203;
+  --violet-dark: #888e02;
+  --coral: #aab203;
+  --coral-dark: #888e02;
+  --teal: #00b8a9;
+  --ink: #2d2a3d;
+  --muted: #79758f;
+  --card-bg: #ffffff;
+  --field-bg: #f6f4fd;
+  --border: #e6e2f7;
+  --success-bg: #e6faf3;
+  --success-text: #0f9d70;
+  --error-bg: #ffece8;
+  --error-text: #d84a2b;
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: system-ui, sans-serif;
-  background: #f5f5f5;
-  color: #222;
+  font-family: "Segoe UI", ui-rounded, system-ui, sans-serif;
+  background: radial-gradient(circle at 10% 0%, #f1edff 0%, #fdf6f1 45%, #eef9f7 100%);
+  background-attachment: fixed;
+  color: var(--ink);
   margin: 0;
-  padding: 2rem;
+  padding: 2rem 1.25rem 4rem;
+  min-height: 100vh;
 }
 
-main {
-  max-width: 480px;
+.topbar {
+  max-width: 920px;
+  margin: 0 auto 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.logo {
+  height: 96px;
+  width: auto;
+}
+
+.topbar-text h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--violet), var(--coral));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.topbar-text p {
+  margin: 0.15rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.layout {
+  max-width: 920px;
   margin: 0 auto;
-  background: #fff;
-  padding: 1.5rem 2rem;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
 }
 
-h1 {
-  font-size: 1.25rem;
+@media (max-width: 720px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  box-shadow: 0 12px 30px rgba(108, 92, 231, 0.12);
+}
+
+.result-card {
+  position: sticky;
+  top: 2rem;
+  text-align: center;
+}
+
+.result-card h2 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  color: var(--ink);
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
 }
 
 .field {
-  margin-bottom: 1rem;
+  margin-bottom: 1.1rem;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 label {
-  font-size: 0.85rem;
-  margin-bottom: 0.25rem;
-  color: #555;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: var(--muted);
 }
 
-input,
-select {
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+input[type="number"],
+input[type="text"] {
+  padding: 0.65rem 0.8rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 1rem;
+  background: var(--field-bg);
+  color: var(--ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-button {
+input[type="number"]:focus,
+input[type="text"]:focus {
+  outline: none;
+  border-color: var(--violet);
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+}
+
+/* Combobox (materiau / profile) */
+.combobox-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
-  padding: 0.6rem;
-  background: #1a73e8;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
+  padding: 0.65rem 0.8rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--field-bg);
+  color: var(--ink);
   font-size: 1rem;
   cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-button:hover {
-  background: #1558b3;
+.combobox-trigger:hover {
+  border-color: var(--violet);
 }
 
-#result {
+.combobox.open .combobox-trigger {
+  border-color: var(--violet);
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+}
+
+.combobox-value.placeholder {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.chevron {
+  width: 18px;
+  height: 18px;
+  color: var(--muted);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.combobox.open .chevron {
+  transform: rotate(180deg);
+  color: var(--violet);
+}
+
+.combobox-panel {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 16px 32px rgba(45, 42, 61, 0.18);
+  overflow: hidden;
+}
+
+.combobox-panel.hidden {
+  display: none;
+}
+
+.combobox-search {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: none;
+  border-bottom: 2px solid var(--border);
+  font-size: 0.95rem;
+  background: var(--field-bg);
+}
+
+.combobox-search:focus {
+  outline: none;
+}
+
+.combobox-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.4rem;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.combobox-list li {
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.combobox-list li:hover,
+.combobox-list li.active {
+  background: var(--field-bg);
+  color: var(--violet-dark);
+}
+
+.combobox-list li.selected {
+  background: var(--violet);
+  color: #fff;
+  font-weight: 600;
+}
+
+.combobox-empty {
+  padding: 0.75rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 0.85rem;
+  margin-top: 0.5rem;
+  background: linear-gradient(90deg, var(--violet), var(--coral));
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(255, 122, 89, 0.28);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 26px rgba(255, 122, 89, 0.35);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+.submit-btn.loading {
+  opacity: 0.75;
+  cursor: wait;
+}
+
+.result {
   margin-top: 1.5rem;
-  padding: 1rem;
-  border-radius: 4px;
-  background: #e6f4ea;
+  padding: 1.1rem;
+  border-radius: var(--radius-md);
+  background: var(--success-bg);
+  color: var(--success-text);
   line-height: 1.6;
+  text-align: left;
 }
 
-#result.error {
-  background: #fce8e6;
+.result.error {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+.result .price {
+  font-size: 1.6rem;
+  font-weight: 800;
 }
 
 .hidden {
