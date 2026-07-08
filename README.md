@@ -83,7 +83,9 @@ industrial-pricing-ai/
 ├── docs/
 │   ├── merise/               # MCD.md, MPD.md (modele de donnees)
 │   ├── rgpd_registre.md      # registre des traitements de donnees personnelles
-│   └── incidents/             # rapports d'incident (Phase 5)
+│   ├── incidents/             # rapports d'incident (Phase 5)
+│   ├── benchmark_services_ia_generative.md  # comparaison de services IA tiers (en cours, E2)
+│   └── veille/                # veille technique et reglementaire hebdomadaire (en cours, E2)
 ├── reports/                 # figures generees + analyse ecrite (choix du modele)
 ├── api/                     # API REST FastAPI exposant le modele
 │   ├── pyproject.toml
@@ -176,3 +178,5 @@ base de developpement.
 | Application cliente (proxy, config, tests) | [app/README.md](app/README.md) |
 | Monitorage (dashboard Grafana, derive des features) | [monitoring/README.md](monitoring/README.md) |
 | Gestion d'incident (2 conflits de port + 1 panne simulee) | [docs/incidents/conflits_de_port.md](docs/incidents/conflits_de_port.md), [docs/incidents/panne_db_simulee.md](docs/incidents/panne_db_simulee.md) |
+| Benchmark de services d'IA generative (explicabilite des predictions, en cours) | [docs/benchmark_services_ia_generative.md](docs/benchmark_services_ia_generative.md) |
+| Veille technique et reglementaire (hebdomadaire, en cours) | [docs/veille/README.md](docs/veille/README.md) |
